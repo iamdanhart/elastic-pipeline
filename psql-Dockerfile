@@ -1,0 +1,5 @@
+FROM postgres:14.4-alpine
+
+USER postgres
+
+COPY ./psql_data/psql_load.sql /docker-entrypoint-initdb.d/

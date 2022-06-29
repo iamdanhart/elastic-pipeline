@@ -1,0 +1,82 @@
+version: '3'
+services:
+    # search engine
+    elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.2.3
+        container_name: elasticsearch
+        environment:
+            - discovery.type=single-node
+            - http.port=9200
+            #- http.cors.enabled=true
+            #- http.cors.allow-origin=http://localhost:1358,http://127.0.0.1:1358
+            #- http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization
+            #- http.cors.allow-credentials=true
+            #- bootstrap.memory_lock=true
+            #- xpack.security.enrollment.enabled=true
+            - xpack.security.enabled=false
+            - ELASTIC_PASSWORD=password
+            - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
+        ports:
+            - '9200:9200'
+            - '9300:9300'
+        ulimits:
+            memlock:
+                soft: -1
+                hard: -1
+        volumes:
+            - ./data:/usr/share/elasticsearch/data
+        networks:
+            - elastic
+    kibana:
+        container_name: kibana
+        image: docker.elastic.co/kibana/kibana:8.2.3
+        ports:
+            - '5601:5601'
+        networks:
+            - elastic
+        depends_on:
+            - elasticsearch
+    logstash:
+        container_name: logstash
+        build:
+            context: .
+            dockerfile: log-Dockerfile
+        depends_on:
+            - elasticsearch
+        environment:
+            - xpack.monitoring.enabled=false
+        ports:
+            - '5044:5044'
+            - '9600:9600'
+        volumes:
+            - ./pipeline:/usr/share/logstash/pipeline/
+        networks:
+            - elastic
+    sql:
+        container_name: postgres
+        build:
+            context: .
+            dockerfile: psql-Dockerfile
+        environment:
+            - ACCEPT_EULA=1
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=P@ssw0rd
+            - PGDATA=/var/lib/postgresql/data/pgdata
+        ports:
+            - '5432:5432'
+        volumes:
+            - ./postgres:/var/lib/postgresql/data
+        networks:
+            - elastic
+    adminer:
+        container_name: adminer
+        image: adminer
+        restart: always
+        ports:
+            - 8181:8080
+        depends_on:
+            - postgres
+        networks:
+            - elastic
+networks:
+    elastic: {}
