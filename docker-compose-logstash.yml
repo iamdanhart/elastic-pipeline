@@ -1,0 +1,18 @@
+version: '3'
+services:
+    logstash:
+        container_name: logstash
+        build:
+            context: .
+            dockerfile: log-Dockerfile
+        environment:
+            - xpack.monitoring.enabled=false
+        ports:
+            - '5044:5044'
+            - '9600:9600'
+        volumes:
+            - ./pipeline:/usr/share/logstash/pipeline/
+        networks:
+            - elastic
+networks:
+    elastic: {}

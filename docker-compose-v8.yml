@@ -36,22 +36,6 @@ services:
             - elastic
         depends_on:
             - elasticsearch
-    logstash:
-        container_name: logstash
-        build:
-            context: .
-            dockerfile: log-Dockerfile
-        depends_on:
-            - elasticsearch
-        environment:
-            - xpack.monitoring.enabled=false
-        ports:
-            - '5044:5044'
-            - '9600:9600'
-        volumes:
-            - ./pipeline:/usr/share/logstash/pipeline/
-        networks:
-            - elastic
     sql:
         container_name: postgres
         build:
