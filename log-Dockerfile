@@ -1,7 +1,6 @@
 FROM docker.elastic.co/logstash/logstash:8.2.3
 
-RUN /usr/share/logstash/bin/logstash-plugin install logstash-filter-aggregate
-RUN /usr/share/logstash/bin/logstash-plugin install logstash-filter-mutate
+RUN /usr/share/logstash/bin/logstash-plugin install logstash-filter-aggregate logstash-filter-mutate logstash-filter-xml
 
 # copy lib database jdbc jars
 COPY ./postgresql-42.4.0.jar /usr/share/logstash/logstash-core/lib/jars/postgresql.jar
