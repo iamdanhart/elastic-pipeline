@@ -7,6 +7,9 @@ services:
             dockerfile: log-Dockerfile
         environment:
             - xpack.monitoring.enabled=false
+            - MONITORING_ENABLED=false
+            - xpack.monitoring.elasticsearch.hosts=http://elasticsearch01:9200,http://elasticsearch02:9200
+            - 'ES_JAVA_OPTS=-Xms0.5g -Xmx0.5g'
         ports:
             - '5044:5044'
             - '9600:9600'
@@ -15,4 +18,7 @@ services:
         networks:
             - elastic
 networks:
-    elastic: {}
+    elastic: 
+        driver: bridge
+        driver_opts:
+            com.docker.network.bridge.enable_icc: "true"

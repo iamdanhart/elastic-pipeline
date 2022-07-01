@@ -1,0 +1,16 @@
+version: '3'
+services:
+    kibana:
+        container_name: kibana
+        image: docker.elastic.co/kibana/kibana:8.2.3
+        volumes:
+            - ./kibana.yml:/usr/share/kibana/config/kibana.yml
+        ports:
+            - '5601:5601'
+        networks:
+            - elastic
+networks:
+    elastic:
+        driver: bridge
+        driver_opts:
+            com.docker.network.bridge.enable_icc: "true"

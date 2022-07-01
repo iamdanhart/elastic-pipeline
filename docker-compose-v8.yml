@@ -1,21 +1,25 @@
 version: '3'
 services:
     # search engine
-    elasticsearch:
+    elasticsearch01:
         image: docker.elastic.co/elasticsearch/elasticsearch:8.2.3
-        container_name: elasticsearch
+        container_name: elasticsearch01
         environment:
-            - discovery.type=single-node
+            # - discovery.type=single-node
             - http.port=9200
             #- http.cors.enabled=true
             #- http.cors.allow-origin=http://localhost:1358,http://127.0.0.1:1358
             #- http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization
             #- http.cors.allow-credentials=true
-            #- bootstrap.memory_lock=true
             #- xpack.security.enrollment.enabled=true
+            - node.name=elasticsearch01
+            - discovery.seed_hosts=elasticsearch02
+            - cluster.initial_master_nodes=elasticsearch01,elasticsearch02
+            - cluster.name=escluster
             - xpack.security.enabled=false
+            - bootstrap.memory_lock=true
             - ELASTIC_PASSWORD=password
-            - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
+            - 'ES_JAVA_OPTS=-Xms2g -Xmx2g'
         ports:
             - '9200:9200'
             - '9300:9300'
@@ -24,18 +28,36 @@ services:
                 soft: -1
                 hard: -1
         volumes:
-            - ./data:/usr/share/elasticsearch/data
+            - ./data01:/usr/share/elasticsearch/data
         networks:
             - elastic
-    kibana:
-        container_name: kibana
-        image: docker.elastic.co/kibana/kibana:8.2.3
-        ports:
-            - '5601:5601'
+    elasticsearch02:
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.2.3
+        container_name: elasticsearch02
+        environment:
+            # - discovery.type=single-node
+            - http.port=9200
+            #- http.cors.enabled=true
+            #- http.cors.allow-origin=http://localhost:1358,http://127.0.0.1:1358
+            #- http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization
+            #- http.cors.allow-credentials=true
+            #- xpack.security.enrollment.enabled=true
+            - node.name=elasticsearch02
+            - discovery.seed_hosts=elasticsearch01
+            - cluster.initial_master_nodes=elasticsearch01,elasticsearch02
+            - cluster.name=escluster
+            - xpack.security.enabled=false
+            - bootstrap.memory_lock=true
+            - ELASTIC_PASSWORD=password
+            - 'ES_JAVA_OPTS=-Xms2g -Xmx2g'
+        ulimits:
+            memlock:
+                soft: -1
+                hard: -1
+        volumes:
+            - ./data02:/usr/share/elasticsearch/data
         networks:
             - elastic
-        depends_on:
-            - elasticsearch
     postgres:
         container_name: postgres
         build:
@@ -63,4 +85,7 @@ services:
         networks:
             - elastic
 networks:
-    elastic: {}
+    elastic:
+        driver: bridge
+        driver_opts:
+            com.docker.network.bridge.enable_icc: "true"
